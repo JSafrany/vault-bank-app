@@ -2,27 +2,28 @@ const { Sequelize, Model, DataTypes } = require('sequelize')
 const path = require('path')
 
 class User extends Model {}
-class Account extends Model {}
+class TransactionHistory extends Model {}
 class Friend extends Model{}
 
 User.init({
-    username: DataTypes.STRING,
+    firstname: DataTypes.STRING,
+    lastname: DataTypes.STRING,
     password: DataTypes.STRING,
     email: DataTypes.STRING,
-}, {sequelize: sequelize})
-
-Account.init({
     balance: DataTypes.FLOAT,
+    friends: DataTypes.ARRAY,
 }, {sequelize: sequelize})
 
-Friend.init({
-    name: DataTypes.STRING,
-    email: DataTypes.STRING,
-}, {sequelize: sequelize})
+TransactionHistory.init ({
+    from: DataTypes.STRING,
+    to: DataTypes.STRING,
+    amount: DataTypes.STRING,
 
-User.hasMany(Friend, {as:"friend"})
-User.hasMany(Account, {as:"account"})
-Friend.belongsTo(User)
-Account.belongsTo(User)
+})
 
-module.exports = {User, Account, Friend, sequelize}
+
+User.hasMany(TransactionHistory, {as:"history"})
+TransactionHistory.belongsTo(User)
+
+
+module.exports = {User, TransactionHistory, sequelize}
