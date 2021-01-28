@@ -29,17 +29,17 @@ app.set('view engine','handlebars')
 app.use(express.urlencoded({ extended: true }))
 app.use(express.static('public'))
 
-app.get('/',(req,res)=>{
+app.get('/',async (req,res)=>{
     if (req.oidc.isAuthenticated()){
-        var user = User.findAll({where:{email:req.oidc.user.email}})[0]
+        var user = await User.findAll({where:{email:req.oidc.user.email}})[0]
         if (!user){
-            User.create({
+            await User.create({
                 firstName:req.oidc.user.given_name,
                 lastName:req.oidc.user.family_name,
                 friends:[],
                 balance:0
             })
-            var user = User.findAll({where:{email:req.oidc.user.email}})[0]
+            var user = await User.findAll({where:{email:req.oidc.user.email}})[0]
         }
         res.render('dashboard',{layout: 'main', user})
     }
@@ -47,7 +47,7 @@ app.get('/',(req,res)=>{
 
 })
 
-app.post('/addfunds',(req,res)=>{
+app.post('/addfunds',async (req,res)=>{
     if (req.oidc.isAuthenticated()){
         if (Object.keys(req.body).length == 0){
             console.log('415')
@@ -59,14 +59,39 @@ app.post('/addfunds',(req,res)=>{
             return
         }
         const amount = req.body.amount
-        const user = User.findAll({where:{email:req.oidc.user.email}})[0]
+        const user = await User.findAll({where:{email:req.oidc.user.email}})[0]
         var balance = user.balance
         balance += amount
-        user.update({balance:balance})
+        await user.update({balance:balance})
         res.redirect('/')
         return
     }
     res.status(403).send({})
+})
+
+app.post('/pay',async (req,res)=>{
+    if(!req.oidc.isAuthenticated()){
+        res.status(403).send()
+        return
+    }
+    if (Object.keys(req.body).length == 0){
+        console.log('415')
+        res.status(415).send({})
+        return
+    }
+    if(!req.body.amount || !req.body.recipient){
+        res.status(400).send({})
+        return
+    }
+    const payer = await User.findAll({where:{email:req.oidc.user.email}})[0]
+    const payee = await User.findAll({where:{email:req.body.recipient}})[0]
+    if(!payer || !payee){
+        res.status(404).send({})
+        return
+    }
+    await payer.update({balance: balance - req.body.amount})
+    await payee.update({balance: balance + req.body.amount})
+    res.redirect('/')
 })
 
 app.listen(3000, () => {
