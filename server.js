@@ -21,7 +21,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use(express.static('public'))
 
 app.get('/',(req,res)=>{
-    if (!req.oidc.isAuthenticated()){
+    if (req.oidc.isAuthenticated()){
         var user = User.findAll({where:{email:req.oidc.user.email}})[0]
         if (!user){
             User.create({
@@ -32,10 +32,32 @@ app.get('/',(req,res)=>{
             })
             var user = User.findAll({where:{email:req.oidc.user.email}})[0]
         }
-        res.render('landing',{user})
+        res.render('dashboard',{user})
     }
-    res.render('dashboard')
+    res.render('landing')
 
+})
+
+app.post('/addfunds',(req,res)=>{
+    if (req.oidc.isAuthenticated()){
+        if (Object.keys(req.body).length == 0){
+            console.log('415')
+            res.status(415).send({})
+            return
+        }
+        if(!req.body.amount){
+            res.status(400).send({})
+            return
+        }
+        const amount = req.body.amount
+        const user = User.findAll({where:{email:req.oidc.user.email}})[0]
+        var balance = user.balance
+        balance += amount
+        user.update({balance:balance})
+        res.redirect('/')
+        return
+    }
+    res.status(403).send({})
 })
 
 app.listen(3000, () => {
