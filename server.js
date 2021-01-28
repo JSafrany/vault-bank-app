@@ -31,21 +31,22 @@ app.use(express.static('public'))
 
 app.get('/',async (req,res)=>{
     if (req.oidc.isAuthenticated()){
-        var user = await User.findAll({where:{email:req.oidc.user.email}})[0]
+        var userList = await User.findAll({where:{email:req.oidc.user.email}})
+        var user = userList[0]
         if (!user){
             await User.create({
                 firstName:req.oidc.user.given_name,
                 lastName:req.oidc.user.family_name,
-                friends:[],
+                email:req.oidc.user.email,
                 balance:0
             })
-            var user = await User.findAll({where:{email:req.oidc.user.email}})[0]
+            user = await User.findAll({where:{email:req.oidc.user.email}})[0]
         }
-        const friendIds = user.friends
-        const friendObjects = []
-        friendIds.forEach(friend => friendObjects.push(friend))
-
+        console.log(user)
+        const friendObjects = await user.getFriends()
+        console.log(friendObjects)
         res.render('dashboard',{layout: 'main', user,friendObjects})
+        return
     }
     res.render('landing', {layout: 'mainlanding'})
 
@@ -104,9 +105,9 @@ app.get('/history', async (req,res) => {
        if (!history) {
            res.redirect('/')
            return
-       } 
+       }
        res.send(history)
-       
+
     }
     res.status(403).send({})
 })
