@@ -20,7 +20,7 @@ User.init({
     password: DataTypes.STRING,
     email: DataTypes.STRING,
     balance: DataTypes.REAL,
-    friends: DataTypes.ARRAY(DataTypes.STRING),
+    friends: DataTypes.ARRAY(DataTypes.INTEGER),
 }, {sequelize: sequelize})
 
 TransactionHistory.init ({
