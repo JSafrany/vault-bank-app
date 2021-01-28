@@ -16,6 +16,7 @@ Account.init({
 }, {sequelize: sequelize})
 
 Friend.init({
+    name: DataTypes.STRING,
     email: DataTypes.STRING,
 }, {sequelize: sequelize})
 
