@@ -41,7 +41,11 @@ app.get('/',async (req,res)=>{
             })
             var user = await User.findAll({where:{email:req.oidc.user.email}})[0]
         }
-        res.render('dashboard',{layout: 'main', user})
+        const friendIds = user.friends
+        const friendObjects = []
+        friendIds.forEach(friend => friendObjects.push(friend))
+
+        res.render('dashboard',{layout: 'main', user,friendObjects})
     }
     res.render('landing', {layout: 'mainlanding'})
 
