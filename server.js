@@ -1,4 +1,4 @@
-const secretSettings = require('./secretSettings')
+//const secretSettings = require('./secretSettings')
 const { auth } = require('express-openid-connect');
 const express = require('express')
 const app = express()
@@ -14,7 +14,16 @@ const handlebars = expressHandlebars({
     handlebars: allowInsecurePrototypeAccess(Handlebars)
 })
 
-app.use(auth(secretSettings),express.json())
+const config = {
+    authRequired: false,
+    auth0Logout: true,
+    secret: process.env.AUTH_SECRET,
+    baseURL: 'http://localhost:3000',
+    clientID: process.env.AUTH_CLIENT_ID,
+    issuerBaseURL: process.env.AUTH_BASE_URL,
+  };
+
+app.use(auth(config),express.json())
 app.engine('handlebars',handlebars)
 app.set('view engine','handlebars')
 app.use(express.urlencoded({ extended: true }))
@@ -32,9 +41,9 @@ app.get('/',(req,res)=>{
             })
             var user = User.findAll({where:{email:req.oidc.user.email}})[0]
         }
-        res.render('dashboard',{user})
+        res.render('dashboard',{layout: 'main', user})
     }
-    res.render('landing')
+    res.render('landing', {layout: 'mainlanding'})
 
 })
 
