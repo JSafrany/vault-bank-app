@@ -24,3 +24,4 @@ User.hasMany(Account, {as:"account"})
 Friend.belongsTo(User)
 Account.belongsTo(User)
 
+module.exports = {User, Account, Friend, sequelize}
