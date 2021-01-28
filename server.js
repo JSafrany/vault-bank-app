@@ -22,9 +22,17 @@ app.use(express.static('public'))
 
 app.get('/',(req,res)=>{
     if (!req.oidc.isAuthenticated()){
-        user = User.findAll({where:{email:req.oidc.user.email}})
-
-        res.render('landing')
+        var user = User.findAll({where:{email:req.oidc.user.email}})[0]
+        if (!user){
+            User.create({
+                firstName:req.oidc.user.given_name,
+                lastName:req.oidc.user.family_name,
+                friends:[],
+                balance:0
+            })
+            var user = User.findAll({where:{email:req.oidc.user.email}})[0]
+        }
+        res.render('landing',{user})
     }
     res.render('dashboard')
 
