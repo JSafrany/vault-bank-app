@@ -4,7 +4,7 @@ const express = require('express')
 const app = express()
 const Handlebars = require('handlebars')
 const expressHandlebars = require('express-handlebars');
-const { User, Account, Friend, sequelize } = require('./models');
+const { User, TransactionHistory, sequelize } = require('./models');
 const {allowInsecurePrototypeAccess} = require('@handlebars/allow-prototype-access')
 if(process.env.NODE_ENV !== 'production') {
     require('dotenv').config()
@@ -93,6 +93,20 @@ app.post('/pay',async (req,res)=>{
     await payee.update({balance: balance + req.body.amount})
     res.redirect('/')
 })
+
+app.get('/history', async (req,res) => {
+    if (req.oidc.isAuthenticated()) {
+        const history = await TransactionHistory.findAll({where:{from:req.oidc.user.email,to:req.oidc.user.email}})
+       if (!history) {
+           res.redirect('/')
+           return
+       } 
+       res.send(history)
+       
+    }
+    res.status(403).send({})
+})
+
 
 app.listen(3000, () => {
     sequelize.sync().then(() => console.log("All ready for banking"))
