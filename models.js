@@ -12,14 +12,13 @@ const sequelize = process.env.NODE_ENV === 'production'
 
 class User extends Model {}
 class TransactionHistory extends Model {}
-class Friend extends Model{}
 
 User.init({
     firstName: DataTypes.STRING,
     lastName: DataTypes.STRING,
     password: DataTypes.STRING,
     email: DataTypes.STRING,
-    balance: DataTypes.FLOAT,
+    balance: DataTypes.REAL,
     friends: DataTypes.ARRAY,
 }, {sequelize: sequelize})
 
