@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "bootstrap": "^4.6.0",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-handlebars": "^5.2.0",
     "express-openid-connect": "^2.2.1",
@@ -9,5 +10,5 @@
   "engines": {
     "node": "14",
     "npm": "6"
-}
+  }
 }
