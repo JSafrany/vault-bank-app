@@ -6,7 +6,7 @@ const Handlebars = require('handlebars')
 const expressHandlebars = require('express-handlebars');
 const { User, TransactionHistory, sequelize } = require('./models');
 const {allowInsecurePrototypeAccess} = require('@handlebars/allow-prototype-access')
-const Mailer = require('Mailer')
+const Mailer = require('./Mailer')
 if(process.env.NODE_ENV !== 'production') {
     require('dotenv').config()
 }
