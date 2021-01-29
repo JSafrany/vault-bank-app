@@ -125,7 +125,7 @@ app.post('/addfriend',async (req,res) =>{
         res.redirect('invite')
         return
     }
-    await user.addUser(friend)
+    await user.addFriend(friend)
     res.status('200').send({})
     return
 
@@ -165,7 +165,7 @@ app.get('/history', async (req,res) => {
     if (req.oidc.isAuthenticated()) {
         const user = await User.findOne({where:{email:req.oidc.user.email}})
         const history = await TransactionHistory.findAll({where:{from:req.oidc.user.email,to:req.oidc.user.email}})
-       
+
         console.log(200)
         res.render('history', {user, history})
         return
