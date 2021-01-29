@@ -61,29 +61,70 @@ app.get('/',async (req,res)=>{
 
 app.post('/addfunds',async (req,res)=>{
     if (req.oidc.isAuthenticated()){
-        if (Object.keys(req.body).length == 0){
-            console.log('415')
-            res.status(415).send({})
-            return
-        }
         if(!req.body.amount){
-            console.log('400')
             res.status(400).send({})
             return
         }
         const amount = req.body.amount
-        const user = await User.findAll({where:{email:req.oidc.user.email}})[0]
-        var balance = user.balance
-        balance += amount
+        const user = await User.findOne({where:{email:req.oidc.user.email}})
+        var balance = parseFloat(user.balance)
+        balance += parseFloat(amount)
         await user.update({balance:balance})
         res.redirect('/')
         return
     }
-    console.log('403')
     res.status(403).send({})
 })
 
 app.post('/pay',async (req,res)=>{
+    if(!req.oidc.isAuthenticated()){
+        res.status(403).send()
+        return
+    }
+    if (Object.keys(req.body).length == 0){
+        console.log('415')
+        res.status(415).send({})
+        return
+    }
+    if(!req.body.amount || !req.body.recipient){
+        res.status(400).send({})
+        return
+    }
+    const payer = await User.findAll({where:{email:req.oidc.user.email}})[0]
+    const payee = await User.findAll({where:{email:req.body.recipient}})[0]
+    if(!payer || !payee){
+        res.status(404).send({})
+        return
+    }
+    await payer.update({balance: balance - req.body.amount})
+    await payee.update({balance: balance + req.body.amount})
+    res.redirect('/')
+})
+
+app.get('/history', async (req,res) => {
+    if (req.oidc.isAuthenticated()) {
+        const history = await TransactionHistory.findAll({where:{from:req.oidc.user.email,to:req.oidc.user.email}})
+       if (!history) {
+           res.redirect('/')
+           return
+       }
+       res.send(history)
+
+    }
+    res.status(403).send({})
+})
+
+app.get('/friends', async(req, res)=> {
+    if (req.oidc.isAuthenticated()) {
+        const user = await User.findOne({where:{email:req.oidc.user.email}})
+        const friends = await user.getFriends()
+       res.render('friends', {friends})
+       return
+    }
+    res.status(403).send({})    
+})
+
+app.post('/addfriend',async (req,res) =>{
     if(!req.oidc.isAuthenticated()){
         console.log('403')
         res.status(403).send()
@@ -94,40 +135,20 @@ app.post('/pay',async (req,res)=>{
         res.status(415).send({})
         return
     }
-    if(!req.body.amount || !req.body.recipient){
+    if(!req.body.email){
         console.log('400')
         res.status(400).send({})
         return
     }
-    const payer = await User.findOne({where:{email:req.oidc.user.email}})
-    const payee = await User.findOne({where:{email:req.body.recipient}})
-    if(!payer || !payee){
+    const user = await User.findOne({where:{email:req.oidc.user.email}})
+    const friend =  await User.findOne({where:{email:req.body.email}})
+    if(!friend.email){
         console.log('404')
         res.status(404).send({})
         return
     }
-    await payer.update({balance: balance - req.body.amount})
-    await payee.update({balance: balance + req.body.amount})
-    await TransactionHistory.create({
-        from:payer.email,
-        to: payee.email,
-        amount:req.body.amount
-    })
-    res.redirect('/')
-})
-
-app.get('/history', async (req,res) => {
-    if (req.oidc.isAuthenticated()) {
-        const user = await User.findOne({where:{email:req.oidc.user.email}})
-        const history = await TransactionHistory.findAll({where:{from:req.oidc.user.email,to:req.oidc.user.email}})
-       
-        console.log(200)
-        res.render('history', {user, history})
-        return
-
-    }
-    console.log(403)
-    res.status(403).send({msg: "Invalid Token"})
+    await user.addUer(friend)
+    res.status('200').send({})
     return
 })
 
