@@ -6,6 +6,7 @@ const Handlebars = require('handlebars')
 const expressHandlebars = require('express-handlebars');
 const { User, TransactionHistory, sequelize } = require('./models');
 const {allowInsecurePrototypeAccess} = require('@handlebars/allow-prototype-access')
+const Mailer = require('Mailer')
 if(process.env.NODE_ENV !== 'production') {
     require('dotenv').config()
 }
@@ -101,6 +102,65 @@ app.post('/pay',async (req,res)=>{
     res.redirect('/')
 })
 
+app.post('/addfriend',async (req,res) =>{
+    if(!req.oidc.isAuthenticated()){
+        console.log('403')
+        res.status(403).send()
+        return
+    }
+    if (Object.keys(req.body).length == 0){
+        console.log('415')
+        res.status(415).send({})
+        return
+    }
+    if(!req.body.email){
+        console.log('400')
+        res.status(400).send({})
+        return
+    }
+    const user = await User.findOne({where:{email:req.oidc.user.email}})
+    const friend =  await User.findOne({where:{email:req.body.email}})
+    if(!friend.email){
+        console.log('user not found, redirecting to /invite')
+        res.redirect('invite')
+        return
+    }
+    await user.addUser(friend)
+    res.status('200').send({})
+    return
+
+})
+
+app.get('/invite',(req,res) =>{
+    res.render('invite')
+})
+
+app.post('/invite',async (req,res)=>{
+    if(!req.oidc.isAuthenticated()){
+        console.log('403')
+        res.sendStatus(403)
+        return
+    }
+    if(!req.body.email){
+        console.log('400')
+        res.sendStatus(400)
+        return
+    }
+    function validateEmail(email) {
+        const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
+    }
+    if(!validateEmail(req.body.email)){
+        console.log('400')
+        res.sendStatus(400)
+        return
+    }
+    const user = await User.findOne({where:{email:req.oidc.email}})
+    const mailer = new Mailer(user.name,req.oidc.email)
+    mailer.sendInvite(req.body.email)
+    res.redirect('/')
+})
+
 app.get('/history', async (req,res) => {
     if (req.oidc.isAuthenticated()) {
         const user = await User.findOne({where:{email:req.oidc.user.email}})
@@ -123,7 +183,7 @@ app.get('/friends', async(req, res)=> {
        res.render('friends', {friends})
        return
     }
-    res.status(403).send({})    
+    res.status(403).send({})
 })
 
 app.post('/addfriend',async (req,res) =>{
