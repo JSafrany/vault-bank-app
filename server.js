@@ -52,7 +52,7 @@ app.get('/',async (req,res)=>{
         }
         console.log(user)
         const friendObjects = await user.getFriends()
-        console.log(friendObjects)
+        //console.log(friendObjects)
         res.render('dashboard',{layout: 'main', user,friendObjects})
         return
     }
@@ -125,7 +125,7 @@ app.post('/addfriend',async (req,res) =>{
         res.redirect('invite')
         return
     }
-    await user.addUser(friend)
+    await user.addFriend(friend)
     res.status('200').send({})
     return
 
@@ -136,6 +136,7 @@ app.get('/invite',(req,res) =>{
 })
 
 app.post('/invite',async (req,res)=>{
+    console.log(req.body)
     if(!req.oidc.isAuthenticated()){
         console.log('403')
         res.sendStatus(403)
@@ -146,17 +147,19 @@ app.post('/invite',async (req,res)=>{
         res.sendStatus(400)
         return
     }
-    function validateEmail(email) {
-        const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        return re.test(String(email).toLowerCase());
-    }
-    if(!validateEmail(req.body.email)){
-        console.log('400')
-        res.sendStatus(400)
-        return
-    }
-    const user = await User.findOne({where:{email:req.oidc.email}})
-    const mailer = new Mailer(user.name,req.oidc.email)
+    // function validateEmail(email) {
+    //     const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    //     return re.test(String(email).toLowerCase());
+    // }
+    // if(!validateEmail(req.body.email)){
+    //     console.log('400')
+    //     res.sendStatus(400)
+    //     return
+    // }
+    
+    const user = await User.findOne({where:{email:req.oidc.user.email}})
+    console.log(user)
+    const mailer = new Mailer(user.name,req.oidc.user.email)
     mailer.sendInvite(req.body.email)
     res.redirect('/')
 })
@@ -165,7 +168,7 @@ app.get('/history', async (req,res) => {
     if (req.oidc.isAuthenticated()) {
         const user = await User.findOne({where:{email:req.oidc.user.email}})
         const history = await TransactionHistory.findAll({where:{from:req.oidc.user.email,to:req.oidc.user.email}})
-       
+
         console.log(200)
         res.render('history', {user, history})
         return
@@ -180,7 +183,7 @@ app.get('/friends', async(req, res)=> {
     if (req.oidc.isAuthenticated()) {
         const user = await User.findOne({where:{email:req.oidc.user.email}})
         const friends = await user.getFriends()
-       res.render('friends', {friends})
+        res.render('friends', {friends})
        return
     }
     res.status(403).send({})
