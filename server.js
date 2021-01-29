@@ -135,14 +135,35 @@ app.post('/addfriend',async (req,res) =>{
     const user = await User.findOne({where:{email:req.oidc.user.email}})
     const friend =  await User.findOne({where:{email:req.body.email}})
     if(!friend.email){
-        console.log('404')
-        res.status(404).send({})
+        console.log('user not found, redirecting to /invite')
+        res.redirect('invite')
         return
     }
     await user.addUser(friend)
     res.status('200').send({})
     return
 
+})
+
+app.get('/invite',(req,res) =>{
+    res.render('invite')
+})
+
+app.post('/invite',async (req,res)=>{
+    if(!req.oidc.isAuthenticated()){
+        console.log('403')
+        res.sendStatus(403)
+        return
+    }
+    if(!req.body.email){
+        console.log('400')
+        res.sendStatus(400)
+        return
+    }
+    function validateEmail(email) {
+        const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
+    }
 })
 
 app.get('/history', async (req,res) => {
