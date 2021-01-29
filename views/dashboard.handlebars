@@ -26,7 +26,7 @@
 
             <div
                 class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-                <h1>Hello {{user.email}}</h1>
+                <h1>Hello {{user.name}}</h1>
             </div>
 
             <div class="card-deck">
@@ -98,7 +98,7 @@
                                 <th scope="col">Send</th>
                             </tr>
                         </thead>
-                        {{#each friend}}
+                        {{#each friendObjects}}
                         <tbody>
                             <tr>
                                 <td>{{this.name}}</td>
@@ -109,7 +109,7 @@
                                 </td>
                             </tr>
                         </tbody>
-                        {{/each}}
+                        
 
                     </table>
                     <div class="modal fade" id="sendMoney" tabindex="-1" role="dialog"
@@ -125,9 +125,9 @@
                                 <div class="modal-body">
                                     <form action="/pay" method="POST">
                                         <div class="md-form form-group w-25">
-                                            <p><input type="text" class="form-control-sm" id="payee"
-                                                    placeholder="Payee"></p>
-                                            <p><input type="number" class="form-control-sm" id="amount"
+                                            <p><input type="text" class="form-control-sm" name="payee"
+                                                    placeholder="{{this.email}}"></p>
+                                            <p><input type="number" step="0.01" class="form-control-sm" name="amount"
                                                     placeholder="Enter amount"></p>
 
                                         </div>
@@ -141,6 +141,7 @@
                             </div>
                         </div>
                     </div>
+                    {{/each}}
                     <a href="/friends">All Friends</a>
                 </div>
             </div>
