@@ -4,7 +4,7 @@ const express = require('express')
 const app = express()
 const Handlebars = require('handlebars')
 const expressHandlebars = require('express-handlebars');
-const { User, Account, Friend, sequelize } = require('./models');
+const { User, TransactionHistory, sequelize } = require('./models');
 const {allowInsecurePrototypeAccess} = require('@handlebars/allow-prototype-access')
 if(process.env.NODE_ENV !== 'production') {
     require('dotenv').config()
@@ -31,17 +31,29 @@ app.use(express.static('public'))
 
 app.get('/',async (req,res)=>{
     if (req.oidc.isAuthenticated()){
-        var user = await User.findAll({where:{email:req.oidc.user.email}})[0]
+        var user = await User.findOne({where:{email:req.oidc.user.email}})
         if (!user){
-            await User.create({
-                firstName:req.oidc.user.given_name,
-                lastName:req.oidc.user.family_name,
-                friends:[],
-                balance:0
-            })
-            var user = await User.findAll({where:{email:req.oidc.user.email}})[0]
+            if(req.oidc.user.given_name){
+                await User.create({
+                    name:req.oidc.user.given_name,
+                    email:req.oidc.user.email,
+                    balance:0.
+                })
+            }
+            else{
+                await User.create({
+                    name:req.oidc.user.nickname,
+                    email:req.oidc.user.email,
+                    balance: 0.
+                })
+            }
+            user = await User.findOne({where:{email:req.oidc.user.email}})
         }
-        res.render('dashboard',{layout: 'main', user})
+        console.log(user)
+        const friendObjects = await user.getFriends()
+        console.log(friendObjects)
+        res.render('dashboard',{layout: 'main', user,friendObjects})
+        return
     }
     res.render('landing', {layout: 'mainlanding'})
 
@@ -93,6 +105,20 @@ app.post('/pay',async (req,res)=>{
     await payee.update({balance: balance + req.body.amount})
     res.redirect('/')
 })
+
+app.get('/history', async (req,res) => {
+    if (req.oidc.isAuthenticated()) {
+        const history = await TransactionHistory.findAll({where:{from:req.oidc.user.email,to:req.oidc.user.email}})
+       if (!history) {
+           res.redirect('/')
+           return
+       }
+       res.send(history)
+
+    }
+    res.status(403).send({})
+})
+
 
 app.listen(3000, () => {
     sequelize.sync().then(() => console.log("All ready for banking"))
