@@ -31,16 +31,23 @@ app.use(express.static('public'))
 
 app.get('/',async (req,res)=>{
     if (req.oidc.isAuthenticated()){
-        var userList = await User.findAll({where:{email:req.oidc.user.email}})
-        var user = userList[0]
+        var user = await User.findOne({where:{email:req.oidc.user.email}})
         if (!user){
-            await User.create({
-                firstName:req.oidc.user.given_name,
-                lastName:req.oidc.user.family_name,
-                email:req.oidc.user.email,
-                balance:0
-            })
-            user = await User.findAll({where:{email:req.oidc.user.email}})[0]
+            if(req.oidc.user.given_name){
+                await User.create({
+                    name:req.oidc.user.given_name,
+                    email:req.oidc.user.email,
+                    balance:0.
+                })
+            }
+            else{
+                await User.create({
+                    name:req.oidc.user.nickname,
+                    email:req.oidc.user.email,
+                    balance: 0.
+                })
+            }
+            user = await User.findOne({where:{email:req.oidc.user.email}})
         }
         console.log(user)
         const friendObjects = await user.getFriends()
