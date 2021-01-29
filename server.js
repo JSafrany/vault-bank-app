@@ -61,19 +61,14 @@ app.get('/',async (req,res)=>{
 
 app.post('/addfunds',async (req,res)=>{
     if (req.oidc.isAuthenticated()){
-        if (Object.keys(req.body).length == 0){
-            console.log('415')
-            res.status(415).send({})
-            return
-        }
         if(!req.body.amount){
             res.status(400).send({})
             return
         }
         const amount = req.body.amount
-        const user = await User.findAll({where:{email:req.oidc.user.email}})[0]
-        var balance = user.balance
-        balance += amount
+        const user = await User.findOne({where:{email:req.oidc.user.email}})
+        var balance = parseFloat(user.balance)
+        balance += parseFloat(amount)
         await user.update({balance:balance})
         res.redirect('/')
         return
@@ -117,6 +112,44 @@ app.get('/history', async (req,res) => {
 
     }
     res.status(403).send({})
+})
+
+app.get('/friends', async(req, res)=> {
+    if (req.oidc.isAuthenticated()) {
+        const user = await User.findOne({where:{email:req.oidc.user.email}})
+        const friends = await user.getFriends()
+       res.render('friends', {friends})
+       return
+    }
+    res.status(403).send({})    
+})
+
+app.post('/addfriend',async (req,res) =>{
+    if(!req.oidc.isAuthenticated()){
+        console.log('403')
+        res.status(403).send()
+        return
+    }
+    if (Object.keys(req.body).length == 0){
+        console.log('415')
+        res.status(415).send({})
+        return
+    }
+    if(!req.body.email){
+        console.log('400')
+        res.status(400).send({})
+        return
+    }
+    const user = await User.findOne({where:{email:req.oidc.user.email}})
+    const friend =  await User.findOne({where:{email:req.body.email}})
+    if(!friend.email){
+        console.log('404')
+        res.status(404).send({})
+        return
+    }
+    await user.addUer(friend)
+    res.status('200').send({})
+    return
 })
 
 
