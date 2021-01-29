@@ -1,14 +1,37 @@
-<div
-    class="container">
-    <h1>{{user.name}}'s Balance: {{user.balance}}</h1>
-</div>
-<div class="container">
-    <div class="card" style="width: 70rem;">
-        <div class="card-body"></div>
-            <p>
-            <h3>Transaction History</h3>
-            </p>
-            <table class="table">
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+            <div class="sidebar-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/history">
+                            Past Transactions
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/friends">
+                            Friends
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/invite">
+                            Invite Friends
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+
+            <div
+                class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                <h1>Transaction History</h1>
+            </div>
+                <p>
+                <div class="card">
+                    <div class="card-body">
+                        <table class="table">
                             <thead>
                                 <tr>
                                     <th scope="col">Date</th>
@@ -28,7 +51,11 @@
                             </tbody>
                             {{/each}}
 
-            </table>
-        </div>
-    </div>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            </p>
+    </main>
+</div>
 </div>

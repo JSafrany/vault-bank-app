@@ -14,7 +14,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link" href="/invite">
                             Invite Friends
                         </a>
                     </li>
@@ -30,7 +30,7 @@
             </div>
 
             <div class="card-deck">
-                <div class="card" style="width: 70rem;">
+                <div class="card">
                     <div class="card-body">
                         <p>
                         <h2>Balance: £{{user.balance}}</h2>
@@ -42,7 +42,7 @@
                         <div id="topUpBox" class="collapse">
                             <form action="/addfunds" method="POST" id="topupform">
                                 <div class="md-form form-group w-25">
-                                    <p><input type="number" step="0.01" class="form-control-sm" name="amount"
+                                    <p><input type="number" step="0.01" min="0" class="form-control-sm" name="amount"
                                             placeholder="Enter amount"></p>
                                     <p><button class="btn btn-sm btn-outline-secondary" type="submit">Submit</button>
                                     </p>
@@ -53,7 +53,7 @@
                     </div>
                 </div>
                 <p>
-                <div class="card" style="width: 70rem;">
+                <div class="card">
                     <div class="card-body">
                         <p>
                         <h2>Recent Transactions</h2>
@@ -85,7 +85,7 @@
             </div>
             </p>
             <p>
-            <div class="card" style="width: 70rem;">
+            <div class="card">
                 <div class="card-body">
                     <p>
                     <h2>Recent Friends</h2>
@@ -95,7 +95,7 @@
                             <tr>
                                 <th scope="col">Name</th>
                                 <th scope="col">Email</th>
-                                <th scope="col">Send</th>
+                                <th scope="col">Send Money</th>
                             </tr>
                         </thead>
                         {{#each friendObjects}}
@@ -123,21 +123,21 @@
                                     </button>
                                 </div>
                                 <div class="modal-body">
-                                    <form action="/pay" method="POST">
+                                    <form action="/pay" method="POST" id="sendmoneyform">
                                         <div class="md-form form-group w-25">
-                                            <p><input type="text" class="form-control-sm" name="payee"
-                                                    placeholder="{{this.email}}"></p>
-                                            <p><input type="number" step="0.01" class="form-control-sm" name="amount"
+                                            <p><input type="text" class="form-control-sm" name="recipient"
+                                                    value="{{this.email}}"></p>
+                                            <p><input type="number" step="0.01" min="0" class="form-control-sm" name="amount"
                                                     placeholder="Enter amount"></p>
 
                                         </div>
-                                    </form>
-
+                                   
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                                     <button type="submit" class="btn btn-primary">Submit</button>
                                 </div>
+                                 </form>
                             </div>
                         </div>
                     </div>
@@ -146,6 +146,7 @@
                 </div>
             </div>
     </div>
+</form>
     </p>
     </main>
 </div>
@@ -159,12 +160,24 @@ const getFormData = () => {
   const form = document.getElementById("topupform");
   return new FormData(form);
 }
+
+const getPayFormData = () => {
+  const form = document.getElementById("sendmoneyform");
+  return new FormData(form);
+
 const toJson = function(event) {
-    const formData = getFormData()
+    const formData = null
+    if (getFormData() == null) {
+        formData = getPayFormData
+    } else {
+        formData = getFormData()
+    }
     event.preventDefault()
     let json = JSON.stringify(Object.fromEntries(formData));
     return json
 }
 
 submit.addEventListener("click", toJson);
+
+}
 </script>
