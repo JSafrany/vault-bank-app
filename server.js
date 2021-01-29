@@ -62,7 +62,6 @@ app.get('/',async (req,res)=>{
 app.post('/addfunds',async (req,res)=>{
     if (req.oidc.isAuthenticated()){
         if(!req.body.amount){
-            console.log('400')
             res.status(400).send({})
             return
         }
@@ -74,13 +73,11 @@ app.post('/addfunds',async (req,res)=>{
         res.redirect('/')
         return
     }
-    console.log('403')
     res.status(403).send({})
 })
 
 app.post('/pay',async (req,res)=>{
     if(!req.oidc.isAuthenticated()){
-        console.log('403')
         res.status(403).send()
         return
     }
@@ -90,24 +87,17 @@ app.post('/pay',async (req,res)=>{
         return
     }
     if(!req.body.amount || !req.body.recipient){
-        console.log('400')
         res.status(400).send({})
         return
     }
-    const payer = await User.findOne({where:{email:req.oidc.user.email}})
-    const payee = await User.findOne({where:{email:req.body.recipient}})
+    const payer = await User.findAll({where:{email:req.oidc.user.email}})[0]
+    const payee = await User.findAll({where:{email:req.body.recipient}})[0]
     if(!payer || !payee){
-        console.log('404')
         res.status(404).send({})
         return
     }
     await payer.update({balance: balance - req.body.amount})
     await payee.update({balance: balance + req.body.amount})
-    await TransactionHistory.create({
-        from:payer.email,
-        to: payee.email,
-        amount:req.body.amount
-    })
     res.redirect('/')
 })
 
