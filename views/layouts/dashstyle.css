@@ -1,0 +1,49 @@
+body {
+    font-size: .875rem;
+  }
+
+
+/* Links */
+a,
+a:focus,
+a:hover {
+  color: #000;
+}
+
+  /*
+   * Sidebar
+   */
+  
+  
+  .sidebar .nav-link {
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .sidebar .nav-link {
+    margin-right: 4px;
+    color: #999;
+  }
+  
+  .sidebar-heading {
+    font-size: .75rem;
+    text-transform: uppercase;
+  }
+  
+  /*
+   * Navbar
+   */
+
+  .navbar-brand {
+    padding-top: .75rem;
+    padding-bottom: .75rem;
+    padding-left: .75rem !important;
+    font-size: 1rem;
+  }
+  
+  /*
+   * Utilities
+   */
+  
+  .border-top { border-top: 1px solid #e5e5e5; }
+  .border-bottom { border-bottom: 1px solid #e5e5e5; }

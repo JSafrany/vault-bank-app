@@ -1,0 +1,151 @@
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+            <div class="sidebar-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/history">
+                            Past Transactions
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            Friends
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            Invite Friends
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+
+            <div
+                class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                <h1>Hello {{user.email}}</h1>
+            </div>
+
+            <div class="card-deck">
+                <div class="card" style="width: 70rem;">
+                    <div class="card-body">
+                        <p>
+                        <h2>Balance: {{user.balance}}</h2>
+                        </p>
+                        <p><button class="btn btn-sm btn-outline-secondary" type="button" data-toggle="collapse"
+                                data-target="#topUpBox" aria-expanded="false" aria-controls="topUpBox">
+                                Add funds
+                            </button></p>
+                        <div id="topUpBox" class="collapse">
+                            <form action="/addfunds" method="POST">
+                                <div class="md-form form-group w-25">
+                                    <p><input type="number" class="form-control-sm" id="amount"
+                                            placeholder="Enter amount"></p>
+                                    <p><button class="btn btn-sm btn-outline-secondary" type="submit">Submit</button>
+                                    </p>
+
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <p>
+                <div class="card" style="width: 70rem;">
+                    <div class="card-body">
+                        <p>
+                        <h2>Recent Transactions</h2>
+                        </p>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">From</th>
+                                    <th scope="col">To</th>
+                                    <th scope="col">Amount</th>
+                                </tr>
+                            </thead>
+                            {{#each history}}
+                            <tbody>
+                                <tr>
+                                    <td>{{this.createdAt}}</td>
+                                    <td>{{this.from}}</td>
+                                    <td>{{this.to}}</td>
+                                    <td>{{this.amount}}</td>
+                                </tr>
+                            </tbody>
+                            {{/each}}
+
+                        </table>
+                        <a href="/history">More</a>
+                    </div>
+                </div>
+            </div>
+            </p>
+            <p>
+            <div class="card" style="width: 70rem;">
+                <div class="card-body">
+                    <p>
+                    <h2>Recent Friends</h2>
+                    </p>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Send</th>
+                            </tr>
+                        </thead>
+                        {{#each friend}}
+                        <tbody>
+                            <tr>
+                                <td>{{this.name}}</td>
+                                <td>{{this.email}}</td>
+                                <td>
+                                    <p><button class="btn btn-sm btn-outline-secondary" type="button"
+                                            data-toggle="modal" data-target="#sendMoney">Send</button></p>
+                                </td>
+                            </tr>
+                        </tbody>
+                        {{/each}}
+
+                    </table>
+                    <div class="modal fade" id="sendMoney" tabindex="-1" role="dialog"
+                        aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Send Money</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form action="/pay" method="POST">
+                                        <div class="md-form form-group w-25">
+                                            <p><input type="text" class="form-control-sm" id="payee"
+                                                    placeholder="Payee"></p>
+                                            <p><input type="number" class="form-control-sm" id="amount"
+                                                    placeholder="Enter amount"></p>
+
+                                        </div>
+                                    </form>
+
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="/friends">All Friends</a>
+                </div>
+            </div>
+    </div>
+    </p>
+    </main>
+</div>
+</div>

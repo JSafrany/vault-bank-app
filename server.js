@@ -118,15 +118,17 @@ app.post('/pay',async (req,res)=>{
 
 app.get('/history', async (req,res) => {
     if (req.oidc.isAuthenticated()) {
+        const user = await User.findOne({where:{email:req.oidc.user.email}})
         const history = await TransactionHistory.findAll({where:{from:req.oidc.user.email,to:req.oidc.user.email}})
-       if (!history) {
-           res.redirect('/')
-           return
-       }
-       res.send(history)
+       
+        console.log(200)
+        res.render('history', {user, history})
+        return
 
     }
-    res.status(403).send({})
+    console.log(403)
+    res.status(403).send({msg: "Invalid Token"})
+    return
 })
 
 
