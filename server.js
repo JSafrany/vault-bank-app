@@ -139,7 +139,7 @@ app.post('/addfriend',async (req,res) =>{
         res.status(404).send({})
         return
     }
-    await user.addUer(friend)
+    await user.addUser(friend)
     res.status('200').send({})
     return
 
