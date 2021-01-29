@@ -15,8 +15,7 @@ class User extends Model {}
 class TransactionHistory extends Model {}
 
 User.init({
-    firstName: DataTypes.STRING,
-    lastName: DataTypes.STRING,
+    name: DataTypes.STRING,
     email: DataTypes.STRING,
     balance: DataTypes.REAL,
 }, {sequelize: sequelize})
