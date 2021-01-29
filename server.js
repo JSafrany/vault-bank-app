@@ -67,6 +67,7 @@ app.post('/addfunds',async (req,res)=>{
             return
         }
         if(!req.body.amount){
+            console.log('400')
             res.status(400).send({})
             return
         }
@@ -78,11 +79,13 @@ app.post('/addfunds',async (req,res)=>{
         res.redirect('/')
         return
     }
+    console.log('403')
     res.status(403).send({})
 })
 
 app.post('/pay',async (req,res)=>{
     if(!req.oidc.isAuthenticated()){
+        console.log('403')
         res.status(403).send()
         return
     }
@@ -92,12 +95,14 @@ app.post('/pay',async (req,res)=>{
         return
     }
     if(!req.body.amount || !req.body.recipient){
+        console.log('400')
         res.status(400).send({})
         return
     }
     const payer = await User.findOne({where:{email:req.oidc.user.email}})
     const payee = await User.findOne({where:{email:req.body.recipient}})
     if(!payer || !payee){
+        console.log('404')
         res.status(404).send({})
         return
     }
