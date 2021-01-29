@@ -6,6 +6,7 @@ const Handlebars = require('handlebars')
 const expressHandlebars = require('express-handlebars');
 const { User, TransactionHistory, sequelize } = require('./models');
 const {allowInsecurePrototypeAccess} = require('@handlebars/allow-prototype-access')
+const Mailer = require('Mailer')
 if(process.env.NODE_ENV !== 'production') {
     require('dotenv').config()
 }
@@ -149,6 +150,15 @@ app.post('/invite',async (req,res)=>{
         const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         return re.test(String(email).toLowerCase());
     }
+    if(!validateEmail(req.body.email)){
+        console.log('400')
+        res.sendStatus(400)
+        return
+    }
+    const user = await User.findOne({where:{email:req.oidc.email}})
+    const mailer = new Mailer(user.name,req.oidc.email)
+    mailer.sendInvite(req.body.email)
+    res.redirect('/')
 })
 
 app.get('/history', async (req,res) => {
@@ -171,7 +181,7 @@ app.get('/friends', async(req, res)=> {
        res.render('friends', {friends})
        return
     }
-    res.status(403).send({})    
+    res.status(403).send({})
 })
 
 app.post('/addfriend',async (req,res) =>{
