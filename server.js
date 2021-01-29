@@ -95,14 +95,19 @@ app.post('/pay',async (req,res)=>{
         res.status(400).send({})
         return
     }
-    const payer = await User.findAll({where:{email:req.oidc.user.email}})[0]
-    const payee = await User.findAll({where:{email:req.body.recipient}})[0]
+    const payer = await User.findOne({where:{email:req.oidc.user.email}})
+    const payee = await User.findOne({where:{email:req.body.recipient}})
     if(!payer || !payee){
         res.status(404).send({})
         return
     }
     await payer.update({balance: balance - req.body.amount})
     await payee.update({balance: balance + req.body.amount})
+    await TransactionHistory.create({
+        from:payer.email,
+        to: payee.email,
+        amount:req.body.amount
+    })
     res.redirect('/')
 })
 
