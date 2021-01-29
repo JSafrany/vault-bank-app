@@ -192,11 +192,6 @@ app.post('/addfriend',async (req,res) =>{
         res.status(403).send()
         return
     }
-    if (Object.keys(req.body).length == 0){
-        console.log('415')
-        res.status(415).send({})
-        return
-    }
     if(!req.body.email){
         console.log('400')
         res.status(400).send({})
