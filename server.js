@@ -52,7 +52,7 @@ app.get('/',async (req,res)=>{
         }
         console.log(user)
         const friendObjects = await user.getFriends()
-        console.log(friendObjects)
+        //console.log(friendObjects)
         res.render('dashboard',{layout: 'main', user,friendObjects})
         return
     }
