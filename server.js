@@ -33,6 +33,7 @@ app.use(express.static('public'))
 app.get('/',async (req,res)=>{
     if (req.oidc.isAuthenticated()){
         var user = await User.findOne({where:{email:req.oidc.user.email}})
+        const history = await TransactionHistory.findAll({where:{from:req.oidc.user.email,to:req.oidc.user.email}, limit: 5})
         if (!user){
             if(req.oidc.user.given_name){
                 await User.create({
@@ -52,8 +53,8 @@ app.get('/',async (req,res)=>{
         }
         console.log(user)
         const friendObjects = await user.getFriends()
-        //console.log(friendObjects)
-        res.render('dashboard',{layout: 'main', user,friendObjects})
+        console.log(friendObjects)
+        res.render('dashboard',{layout: 'main', user,friendObjects, history})
         return
     }
     res.render('landing', {layout: 'mainlanding'})
@@ -88,17 +89,22 @@ app.post('/pay',async (req,res)=>{
         return
     }
     if(!req.body.amount || !req.body.recipient){
+        console.log(400)
         res.status(400).send({})
         return
     }
-    const payer = await User.findAll({where:{email:req.oidc.user.email}})[0]
-    const payee = await User.findAll({where:{email:req.body.recipient}})[0]
+    const payer = await User.findOne({where:{email:req.oidc.user.email}})
+    const payee = await User.findOne({where:{email:req.body.recipient}})
     if(!payer || !payee){
+        console.log(404)
         res.status(404).send({})
         return
     }
-    await payer.update({balance: balance - req.body.amount})
-    await payee.update({balance: balance + req.body.amount})
+    payeeBalance = parseFloat(payee.balance)
+    payerBalance = parseFloat(payer.balance)
+    await payer.update({balance: payerBalance - parseFloat(req.body.amount)})
+    await payee.update({balance: payeeBalance + parseFloat(req.body.amount)})
+    await TransactionHistory.create({from: req.body.recipient, to: payer.email, amount: req.body.amount, UserId: payer.id})
     res.redirect('/')
 })
 
@@ -106,11 +112,6 @@ app.post('/addfriend',async (req,res) =>{
     if(!req.oidc.isAuthenticated()){
         console.log('403')
         res.status(403).send()
-        return
-    }
-    if (Object.keys(req.body).length == 0){
-        console.log('415')
-        res.status(415).send({})
         return
     }
     if(!req.body.email){
@@ -136,7 +137,6 @@ app.get('/invite',(req,res) =>{
 })
 
 app.post('/invite',async (req,res)=>{
-    console.log(req.body)
     if(!req.oidc.isAuthenticated()){
         console.log('403')
         res.sendStatus(403)
@@ -147,19 +147,17 @@ app.post('/invite',async (req,res)=>{
         res.sendStatus(400)
         return
     }
-    // function validateEmail(email) {
-    //     const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    //     return re.test(String(email).toLowerCase());
-    // }
-    // if(!validateEmail(req.body.email)){
-    //     console.log('400')
-    //     res.sendStatus(400)
-    //     return
-    // }
-    
-    const user = await User.findOne({where:{email:req.oidc.user.email}})
-    console.log(user)
-    const mailer = new Mailer(user.name,req.oidc.user.email)
+    function validateEmail(email) {
+        const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
+    }
+    if(!validateEmail(req.body.email)){
+        console.log('400')
+        res.sendStatus(400)
+        return
+    }
+    const user = await User.findOne({where:{email:req.oidc.email}})
+    const mailer = new Mailer(user.name,req.oidc.email)
     mailer.sendInvite(req.body.email)
     res.redirect('/')
 })
@@ -168,11 +166,9 @@ app.get('/history', async (req,res) => {
     if (req.oidc.isAuthenticated()) {
         const user = await User.findOne({where:{email:req.oidc.user.email}})
         const history = await TransactionHistory.findAll({where:{from:req.oidc.user.email,to:req.oidc.user.email}})
-
         console.log(200)
         res.render('history', {user, history})
         return
-
     }
     console.log(403)
     res.status(403).send({msg: "Invalied token"})
@@ -183,7 +179,7 @@ app.get('/friends', async(req, res)=> {
     if (req.oidc.isAuthenticated()) {
         const user = await User.findOne({where:{email:req.oidc.user.email}})
         const friends = await user.getFriends()
-        res.render('friends', {friends})
+       res.render('friends', {friends})
        return
     }
     res.status(403).send({})
