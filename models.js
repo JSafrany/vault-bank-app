@@ -8,19 +8,16 @@ const connectionSettings = {
 }
 
 const sequelize = process.env.NODE_ENV === 'production'
-    ? new Sequelize(process.env.DATABASE_URL, {dialect: 'sqlite', storage: path.join(__dirname, 'data.db')})
+    ? new Sequelize(process.env.DATABASE_URL, {dialect: 'postgres',potocal:'postgres', storage: path.join(__dirname, 'data.db')})
     : new Sequelize({dialect: 'sqlite', storage: path.join(__dirname, 'data.db')})
 
 class User extends Model {}
 class TransactionHistory extends Model {}
 
 User.init({
-    firstName: DataTypes.STRING,
-    lastName: DataTypes.STRING,
-    password: DataTypes.STRING,
+    name: DataTypes.STRING,
     email: DataTypes.STRING,
     balance: DataTypes.REAL,
-    friends: DataTypes.ARRAY(DataTypes.INTEGER),
 }, {sequelize: sequelize})
 
 TransactionHistory.init ({
@@ -29,8 +26,11 @@ TransactionHistory.init ({
     amount: DataTypes.STRING,
 }, {sequelize: sequelize})
 
+const friendTable = sequelize.define('friendTable',{
+},{})
 
 User.hasMany(TransactionHistory, {as:"history"})
+User.belongsToMany(User,{as:'friends',through:friendTable})
 TransactionHistory.belongsTo(User)
 
 
